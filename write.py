@@ -115,7 +115,6 @@ if __name__ == "__main__":
         "--source",
         ".",
     )
-    # call_git("checkout", "--orphan", "temp_branch")
     offset = datetime.timedelta(days=0)
     curr_date = start_date + offset
     for i, val in enumerate(vals):
@@ -126,11 +125,6 @@ if __name__ == "__main__":
         curr_date = start_date + offset
     print()
 
-    # This doesn't delete the old history on the Github servers but it does delete it in the repo
-    # call_git("branch", "-D", "main")
-    # call_git("branch", "-m", "main")
     call_git(tmp, "push")
-    shutil.rmtree(tmp)
-    call_proc(".", "rm", tmp)
-    # call_git("push", "-f", "origin", "main")
+    os.system(f'rmdir /S /Q "{tmp}"')
 
