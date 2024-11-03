@@ -80,23 +80,23 @@ if __name__ == "__main__":
     if int(start_date.strftime("%U")) == 1:
         x_offset = -1
     y_offset = (start_date.weekday()) % 7
-    y = (start_date.weekday() + 1 + y_offset) % 7
-    x = int(start_date.strftime("%U")) + x_offset
     offset = datetime.timedelta(days=0)
     curr_date = start_date + offset
     vals = []
     max_val = 0
-    while x < 52:
+    while True:
+        offset = datetime.timedelta(days=offset.days + 1)
+        curr_date = start_date + offset
+        x = int((curr_date + datetime.timedelta(days=-1)).strftime("%U")) + x_offset
+        # 0 is Monday, we want 0 to be Sunday
+        y = (curr_date.weekday() + 1 + y_offset) % 7
+        if not x < 52:
+            break
+
         val = get_lum(img.getpixel((x, y)))  # type: ignore
         vals.append(val)
         if val > max_val:
             max_val = val
-
-        offset = datetime.timedelta(days=offset.days + 1)
-        curr_date = start_date + offset
-        x = int(curr_date.strftime("%U")) + x_offset
-        # 0 is Monday, we want 0 to be Sunday
-        y = (curr_date.weekday() + 1 + y_offset) % 7
 
     # Add commits using the normalised pixel value
     tmp = tempfile.mkdtemp()
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     curr_date = start_date + offset
     for i, val in enumerate(vals):
         print(f"\r{i+1}/{len(vals)} ", end="")
-        for _ in range(int(10 * val / max_val)):
+        for _ in range(int(5 * val / max_val)):
             create_commit(tmp, curr_date)
         offset = datetime.timedelta(days=offset.days + 1)
         curr_date = start_date + offset
