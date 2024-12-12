@@ -77,26 +77,26 @@ if __name__ == "__main__":
     start_date = datetime.date(args.year, 1, 1)
     x_offset = 0
     # Makes x start at 0 even if Jan 1 is a Sunday
-    if int(start_date.strftime("%U")) == 1:
+    if int(start_date.strftime("%U")) == 6:
         x_offset = -1
-    y_offset = (start_date.weekday()) % 7
+    y = (start_date.weekday() + 1) % 7
     offset = datetime.timedelta(days=0)
     curr_date = start_date + offset
+    x = int((curr_date).strftime("%U")) + x_offset
     vals = []
     max_val = 0
     while True:
-        offset = datetime.timedelta(days=offset.days + 1)
-        curr_date = start_date + offset
-        x = int((curr_date + datetime.timedelta(days=-1)).strftime("%U")) + x_offset
-        # 0 is Monday, we want 0 to be Sunday
-        y = (curr_date.weekday() + 1 + y_offset) % 7
-        if not x < 52:
-            break
-
         val = get_lum(img.getpixel((x, y)))  # type: ignore
         vals.append(val)
         if val > max_val:
             max_val = val
+        offset = datetime.timedelta(days=offset.days + 1)
+        curr_date = start_date + offset
+        x = int((curr_date).strftime("%U")) + x_offset
+        y += 1
+        y = y % 7
+        if x >= 52:
+            break
 
     # Add commits using the normalised pixel value
     tmp = tempfile.mkdtemp()
@@ -125,6 +125,7 @@ if __name__ == "__main__":
         curr_date = start_date + offset
     print()
 
-    call_git(tmp, "push")
-    os.system(f'rmdir /S /Q "{tmp}"')
+    call_git(tmp, "push", "-u", "origin", "main")
+    shutil.rmtree(tmp)
+    # os.system(f'rm -rf "{tmp}"')
 
